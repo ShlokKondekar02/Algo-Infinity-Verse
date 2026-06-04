@@ -810,8 +810,13 @@ const practiceProblems = [
     tags: ["Arrays", "Hash Table"],
     acceptance: "48.2%",
     category: "arrays",
-    description: "Given an array of integers nums and an integer target, return indices of the two numbers that add up to target. You may assume exactly one solution exists, and you may not use the same element twice. Return the answer in any order.",
-    constraints: ["2 ≤ nums.length ≤ 10⁴", "-10⁹ ≤ nums[i] ≤ 10⁹", "Only one valid answer exists"],
+    description:
+      "Given an array of integers nums and an integer target, return indices of the two numbers that add up to target. You may assume exactly one solution exists, and you may not use the same element twice. Return the answer in any order.",
+    constraints: [
+      "2 ≤ nums.length ≤ 10⁴",
+      "-10⁹ ≤ nums[i] ≤ 10⁹",
+      "Only one valid answer exists",
+    ],
     followUp: "Can you solve it in O(n) time complexity?",
   },
   {
@@ -821,8 +826,12 @@ const practiceProblems = [
     tags: ["Strings", "Stack"],
     acceptance: "40.2%",
     category: "strings",
-    description: "Given a string s containing just the characters '(', ')', '{', '}', '[' and ']', determine if the input string is valid. A string is valid if every open bracket is closed by the same type of bracket in the correct order.",
-    constraints: ["1 ≤ s.length ≤ 10⁴", "s consists of parentheses only '()[]{}'"],
+    description:
+      "Given a string s containing just the characters '(', ')', '{', '}', '[' and ']', determine if the input string is valid. A string is valid if every open bracket is closed by the same type of bracket in the correct order.",
+    constraints: [
+      "1 ≤ s.length ≤ 10⁴",
+      "s consists of parentheses only '()[]{}'",
+    ],
     followUp: "Can you solve it in O(n) time and O(n) space?",
   },
   {
@@ -975,21 +984,25 @@ let userProgress = {
   avatar: "🚀",
   completedProblems: [],
 
-  favoriteProblems: [],//here i have added a new property to store the user's favorite problems
+  favoriteProblems: [], //here i have added a new property to store the user's favorite problems
   recentProblems: [], //here i have added a new property to store the user's recent problems
 
   favoriteProblems: [], //here i have added a new property to store the user's favorite problems
   problemNotes: {},
-
   xp: 0,
   level: 1,
   streak: 0,
   badges: [],
   lastActive: null,
   quizScores: {}, // topic -> { bestScore, attempts, totalXP }
+  bestQuizTimes: {},
 };
 
 applySavedTheme();
+
+// ===== QUIZ EDITOR (state) =====
+// Declared early to avoid TDZ issues when referenced by event handlers.
+let currentProblem = null;
 
 // ===== INITIALIZATION =====
 document.addEventListener("DOMContentLoaded", () => {
@@ -1038,6 +1051,34 @@ document.addEventListener("DOMContentLoaded", () => {
     topicModal.addEventListener("click", (e) => {
       if (e.target === topicModal) {
         closeTopicModal();
+      }
+    });
+  }
+
+  const saveNotesBtn = document.getElementById("saveNotesBtn");
+
+  if (saveNotesBtn) {
+    saveNotesBtn.addEventListener("click", saveProblemNotes);
+  }
+
+  const notesModalClose = document.getElementById("notesModalClose");
+
+  if (notesModalClose) {
+    notesModalClose.addEventListener("click", closeNotesModal);
+  }
+
+  const closeNotesBtn = document.getElementById("closeNotesBtn");
+
+  if (closeNotesBtn) {
+    closeNotesBtn.addEventListener("click", closeNotesModal);
+  }
+
+  const notesModal = document.getElementById("notesModal");
+
+  if (notesModal) {
+    notesModal.addEventListener("click", (e) => {
+      if (e.target === notesModal) {
+        closeNotesModal();
       }
     });
   }
@@ -1308,23 +1349,23 @@ document.addEventListener("click", (e) => {
 function getTopicProgress(topicName) {
   // Map topic names to category keys used in practiceProblems
   const categoryMap = {
-      "Arrays": "arrays",
-      "Strings": "strings",
-      "Linked List": "linkedlist",
-      "Trees": "trees",
-      "Graphs": "graphs",
-      "Dynamic Programming": "dp"
+    Arrays: "arrays",
+    Strings: "strings",
+    "Linked List": "linkedlist",
+    Trees: "trees",
+    Graphs: "graphs",
+    "Dynamic Programming": "dp",
   };
 
   const category = categoryMap[topicName];
   if (!category) return { completed: 0, total: 0, percentage: 0 };
 
-  const topicProblems = practiceProblems.filter(p => p.category === category);
+  const topicProblems = practiceProblems.filter((p) => p.category === category);
   const total = topicProblems.length;
   if (total === 0) return { completed: 0, total: 0, percentage: 0 };
 
-  const completed = topicProblems.filter(p =>
-      userProgress.completedProblems.includes(p.id)
+  const completed = topicProblems.filter((p) =>
+    userProgress.completedProblems.includes(p.id),
   ).length;
 
   const percentage = Math.round((completed / total) * 100);
@@ -1346,26 +1387,26 @@ function initTopicOfTheDay() {
   const topic = getDailyTopic();
   if (!topic) return;
 
-  document.getElementById('totdIcon').textContent = topic.icon;
-  document.getElementById('totdTitle').textContent = topic.name;
-  document.getElementById('totdDesc').textContent = topic.description;
+  document.getElementById("totdIcon").textContent = topic.icon;
+  document.getElementById("totdTitle").textContent = topic.name;
+  document.getElementById("totdDesc").textContent = topic.description;
 
-  const diffEl = document.getElementById('totdDifficulty');
+  const diffEl = document.getElementById("totdDifficulty");
   diffEl.textContent = topic.difficulty;
   diffEl.className = `totd-difficulty difficulty-badge ${getDifficultyClass(topic.difficulty)}`;
 
   const progress = getTopicProgress(topic.name);
-  document.getElementById('totdProblems').textContent =
-      `${progress.completed}/${progress.total} solved`;
+  document.getElementById("totdProblems").textContent =
+    `${progress.completed}/${progress.total} solved`;
 
-  document.getElementById('totdBtn').addEventListener('click', () => {
-      openTopicModal(topic);
+  document.getElementById("totdBtn").addEventListener("click", () => {
+    openTopicModal(topic);
   });
 }
 
 function initTopicsSection() {
   const topicsGrid = document.querySelector(".topics-grid");
-  topicsGrid.innerHTML = '';
+  topicsGrid.innerHTML = "";
   dsaTopics.forEach((topic, index) => {
     const card = document.createElement("div");
     card.className = "topic-card animate-in";
@@ -1419,6 +1460,9 @@ function getDifficultyClass(difficulty) {
 
 // Get quiz topic key from topic object
 function getQuizTopicKey(topic) {
+  if (typeof topic === "string") {
+    return topic;
+  }
   const name = topic.name.toLowerCase();
   // Map topic names to quiz keys
   const keyMap = {
@@ -1431,6 +1475,7 @@ function getQuizTopicKey(topic) {
   };
   return keyMap[name] || name.replace(/\s+/g, "");
 }
+
 function initQuizSection() {
   try {
     console.log("Initializing Quiz Section...");
@@ -1467,6 +1512,10 @@ function initQuizSection() {
                 </button>
             `;
       quizGrid.appendChild(card);
+      card.addEventListener("click", () => {
+        console.log("QUIZ CARD CLICKED");
+        startQuiz(topicKey);
+      });
       console.log(`Quiz card created for ${topic.name}`);
 
       // Update progress display
@@ -1477,7 +1526,9 @@ function initQuizSection() {
       if (startBtn) {
         startBtn.addEventListener("click", () => {
           console.log(`Start Quiz clicked for ${topic.name}`);
-          startQuiz(topic);
+          console.log("QUIZ BUTTON CLICKED");
+          console.log("Topic Key:", topicKey);
+          startQuiz(topicKey);
         });
       } else {
         console.error("Start quiz button not found for topic:", topic.name);
@@ -1509,43 +1560,38 @@ function updateQuizProgressDisplay(topic) {
   attemptsEl.textContent = quizData.attempts;
 }
 
-function startQuiz(topic) {
-  const topicKey = getQuizTopicKey(topic);
-  const questions = quizQuestions[topicKey];
-
-  if (!questions || questions.length === 0) {
-    showNotification(
-      "No quiz questions available for this topic yet!",
-      "error",
-    );
+function startQuiz(topicKey) {
+  console.log("startQuiz called");
+  console.log("topicKey =", topicKey);
+  console.log("startQuiz called with:", topicKey);
+  const topicQuiz = quizQuestions[topicKey];
+  if (!topicQuiz || topicQuiz.length === 0) {
+    console.error("Quiz data not found for:", topicKey);
     return;
   }
 
+  const resultEl = document.getElementById("topicQuizResult");
+
+if (resultEl) {
+  resultEl.classList.add("hidden");
+  resultEl.innerHTML = "";
+}
+document.getElementById("topicQuizQuestionText").style.display = "block";
+  document.getElementById("topicQuizOptions").style.display = "block";
+  document.getElementById("topicQuizProgress").style.display = "block";
+  document.getElementById("topicQuizCounter").style.display = "block";
   currentQuiz = {
-    topic: topic,
-    questions: shuffleArray([...questions]),
+    topic: topicKey,
+    questions: [...topicQuiz],
     currentQuestionIndex: 0,
     score: 0,
     answers: [],
   };
 
-  // Set modal header info
-  try {
-    document.getElementById("topicQuizBadge").textContent = topic.name;
-    document.getElementById("topicQuizDifficulty").textContent =
-      topic.difficulty;
-    document.getElementById("topicQuizTitle").textContent =
-      `${topic.name} Quiz`;
-
-    // Hide previous results
-    const prevResult = document.getElementById("topicQuizResult");
-    if (prevResult) prevResult.classList.add("hidden");
-  } catch (e) {
-    console.error("Error setting quiz modal header:", e);
-    return;
-  }
-
   openQuizModal();
+
+  startQuizTimer(topicKey);
+
   renderQuizQuestion();
 }
 
@@ -1558,10 +1604,59 @@ function shuffleArray(array) {
   return array;
 }
 
+function startQuizTimer(topicKey) {
+  clearInterval(quizTimerInterval);
+  quizStartTime = Date.now();
+
+  updateQuizTimerDisplay(topicKey);
+
+  quizTimerInterval = setInterval(() => {
+    updateQuizTimerDisplay(topicKey);
+  }, 1000);
+}
+
+function stopQuizTimer() {
+  clearInterval(quizTimerInterval);
+
+  const elapsedSeconds = Math.floor((Date.now() - quizStartTime) / 1000);
+
+  return elapsedSeconds;
+}
+
+function updateQuizTimerDisplay(topicKey) {
+  const timerEl = document.getElementById("quizTimer");
+
+  const bestTimeEl = document.getElementById("bestQuizTime");
+
+  if (!timerEl || !bestTimeEl) return;
+
+  const elapsedSeconds = Math.floor((Date.now() - quizStartTime) / 1000);
+
+  timerEl.textContent = formatQuizTime(elapsedSeconds);
+
+  const bestTime = userProgress.bestQuizTimes[topicKey];
+
+  bestTimeEl.textContent = bestTime ? formatQuizTime(bestTime) : "--:--";
+}
+
+function formatQuizTime(seconds) {
+  const mins = Math.floor(seconds / 60)
+    .toString()
+    .padStart(2, "0");
+
+  const secs = (seconds % 60).toString().padStart(2, "0");
+
+  return `${mins}:${secs}`;
+}
+
 // Quiz Modal
 let currentQuiz = null;
+let quizStartTime = null;
+let quizTimerInterval = null;
+// let currentNotesProblemId = null; // duplicate declaration removed
 
 function openQuizModal() {
+  console.log("Opening quiz modal");
   try {
     const modal = document.getElementById("quizModal");
     if (modal) {
@@ -1578,13 +1673,30 @@ function closeQuizModal() {
   try {
     const modal = document.getElementById("quizModal");
     if (modal) modal.classList.remove("active");
+
+    // Hide old quiz result
+    const resultEl = document.getElementById("topicQuizResult");
+    if (resultEl) {
+      resultEl.classList.add("hidden");
+      resultEl.innerHTML = "";
+    }
+
+    // Restore quiz elements for next attempt
+    document.getElementById("topicQuizQuestionText").style.display = "block";
+    document.getElementById("topicQuizOptions").style.display = "block";
+    document.getElementById("topicQuizProgress").style.display = "block";
+    document.getElementById("topicQuizCounter").style.display = "block";
   } catch (e) {
     console.error("Error closing quiz modal:", e);
   }
+
+  clearInterval(quizTimerInterval);
   currentQuiz = null;
 }
 
 function renderQuizQuestion() {
+  console.log("renderQuizQuestion called");
+  console.log(currentQuiz);
   if (
     !currentQuiz ||
     currentQuiz.currentQuestionIndex >= currentQuiz.questions.length
@@ -1596,6 +1708,9 @@ function renderQuizQuestion() {
   const question = currentQuiz.questions[currentQuiz.currentQuestionIndex];
   const questionEl = document.getElementById("topicQuizQuestionText");
   const optionsEl = document.getElementById("topicQuizOptions");
+  console.log("QUESTION =", question);
+  console.log("questionEl =", questionEl);
+  console.log("optionsEl =", optionsEl);
   const progressEl = document.getElementById("topicQuizProgress");
   const counterEl = document.getElementById("topicQuizCounter");
 
@@ -1662,13 +1777,17 @@ function selectQuizAnswer(selectedIndex) {
   }, 1200);
 }
 
+console.log("FINISH QUIZ");
+console.log("Score:", currentQuiz.score);
+console.log("Questions:", currentQuiz.questions.length);
+
 function finishQuiz() {
-  const topicKey = getQuizTopicKey(currentQuiz.topic);
+  const topicKey = currentQuiz.topic;
   const score = currentQuiz.score;
   const total = currentQuiz.questions.length;
   const percentage = Math.round((score / total) * 100);
+  const completionTime = stopQuizTimer();
 
-  // Update user progress
   if (!userProgress.quizScores[topicKey]) {
     userProgress.quizScores[topicKey] = {
       bestScore: 0,
@@ -1678,33 +1797,49 @@ function finishQuiz() {
   }
 
   const record = userProgress.quizScores[topicKey];
+  const bestTime = userProgress.bestQuizTimes[topicKey];
+
+  if (!bestTime || completionTime < bestTime) {
+    userProgress.bestQuizTimes[topicKey] = completionTime;
+  }
+  updateQuizTimerDisplay(topicKey);
+
   record.attempts++;
+
   if (percentage > record.bestScore) {
     record.bestScore = percentage;
   }
 
-  // Award XP
-  const xpEarned = Math.round(score * 10); // 10 XP per correct answer
+  const xpEarned = Math.round(score * 10);
+
   addXP(xpEarned);
+
   record.totalXP += xpEarned;
 
   saveUserData();
-
-  // Show results
-  showQuizResults(score, total, percentage, xpEarned);
-
-  // Update display
-  updateQuizProgressDisplay(currentQuiz.topic);
+  document.getElementById("topicQuizQuestionText").style.display = "none";
+  document.getElementById("topicQuizOptions").style.display = "none";
+  console.log("RESULTS:", score, total, percentage, xpEarned, completionTime);
+  showQuizResults(score, total, percentage, xpEarned, completionTime);
+  document.getElementById("topicQuizResult").scrollIntoView({
+    behavior: "smooth",
+    block: "center",
+  });
+  updateQuizProgressDisplay(topicKey);
   updateDashboard();
   updateGamification();
-
-  setTimeout(() => {
-    closeQuizModal();
-    currentQuiz = null;
-  }, 1500);
 }
 
-function showQuizResults(score, total, percentage, xpEarned) {
+console.log("SHOW RESULTS");
+console.log({
+  score,
+  total,
+  percentage,
+  xpEarned,
+  completionTime,
+});
+
+function showQuizResults(score, total, percentage, xpEarned, completionTime) {
   const resultEl = document.getElementById("topicQuizResult");
   if (!resultEl) return;
 
@@ -1734,12 +1869,12 @@ function showQuizResults(score, total, percentage, xpEarned) {
             </div>
             <p>You got <strong>${score}</strong> out of <strong>${total}</strong> questions correct</p>
             <p class="xp-gained">+${xpEarned} XP earned!</p>
+            <p class="completion-time">Completion Time: ${formatQuizTime(completionTime)}</p>
         </div>
     `;
 
   resultEl.classList.remove("hidden");
 }
-
 // ===== PRACTICE SECTION =====
 function initPracticeSection() {
   const problemsGrid = document.querySelector(".problems-grid");
@@ -1835,7 +1970,7 @@ function renderProblems(filter = "all", searchQuery = "") {
   // Count updation functionality
   const visibleCountEl = document.getElementById("visible-count");
   const totalCountEl = document.getElementById("total-count");
-  
+
   if (visibleCountEl && totalCountEl) {
     visibleCountEl.textContent = filteredProblems.length;
     totalCountEl.textContent = practiceProblems.length;
@@ -1855,12 +1990,17 @@ function renderProblems(filter = "all", searchQuery = "") {
                    : ""
                }"
 data-id="${problem.id}">
-         <i class="fas fa-heart"></i>
-     </button>
+        <i class="fas fa-heart"></i>
+    </button>
+    <button class="notes-btn ${
+      userProgress.problemNotes[problem.id] ? "has-notes" : ""
+    }" data-id="${problem.id}">
+  <i class="fas fa-sticky-note"></i>
+</button>
 
                <button class="notes-btn ${
-                userProgress.problemNotes[problem.id] ? "active" : ""
-              }" data-id="${problem.id}">
+                 userProgress.problemNotes[problem.id] ? "active" : ""
+               }" data-id="${problem.id}">
                  <i class="fas fa-sticky-note"></i>
                </button>
 
@@ -1902,8 +2042,9 @@ data-id="${problem.id}">
   problemsGrid.querySelectorAll(".notes-btn").forEach((btn) => {
     btn.addEventListener("click", (e) => {
       e.stopPropagation();
-
+      console.log("NOTES CLICKED");
       const problemId = parseInt(btn.dataset.id);
+      currentNotesProblemId = problemId;
       openNotesModal(problemId);
     });
   });
@@ -1933,6 +2074,40 @@ function toggleFavorite(problemId) {
   saveUserData();
 }
 
+function openNotesModal(problemId) {
+  console.log("OPENING MODAL", problemId);
+  currentNotesProblemId = problemId;
+
+  const modal = document.getElementById("notesModal");
+  const textarea = document.getElementById("problemNotesInput");
+
+  textarea.value = userProgress.problemNotes[problemId] || "";
+
+  modal.classList.add("active");
+}
+
+function closeNotesModal() {
+  const modal = document.getElementById("notesModal");
+
+  modal.classList.remove("active");
+}
+
+function saveProblemNotes() {
+  const textarea = document.getElementById("problemNotesInput");
+
+  const note = textarea.value.trim();
+
+  if (currentNotesProblemId !== null) {
+    userProgress.problemNotes[currentNotesProblemId] = note;
+
+    saveUserData();
+
+    showNotification("Notes saved successfully 📝", "success");
+  }
+
+  closeNotesModal();
+}
+
 // ===== ROADMAP =====
 function initRoadmap() {
   const progressBar = document.getElementById("roadmapProgress");
@@ -1955,33 +2130,36 @@ function initRoadmap() {
 
 // ===== PROFILE =====
 function initProfile() {
-   var profileName = document.getElementById("profileName");
-   if (profileName) {
-     profileName.textContent = userProgress.name;
-   }
-   var joinDate = document.getElementById("joinDate");
-   if (joinDate) {
-     var today = new Date();
-     joinDate.textContent = today.toLocaleDateString("en-US", {
-       month: "long",
-       day: "numeric",
-       year: "numeric",
-     });
-   }
-   var currentDate = document.getElementById("current-date");
-   if (currentDate) {
-     currentDate.textContent = new Date().toLocaleDateString("en-US", {
-       weekday: "long",
-       month: "long",
-       day: "numeric",
-     });
-   }
-   var avatarIcon = document.querySelector(".avatar-icon");
-   if (avatarIcon) {
-     avatarIcon.textContent = userProgress.avatar || "🚀";
-   }
-   updateProfile();
- }
+  var profileName = document.getElementById("profileName");
+  if (profileName) {
+    profileName.textContent = userProgress.name;
+  }
+  var joinDate = document.getElementById("joinDate");
+  var joinDateSection = document.getElementById("joinDateSection");
+  if (joinDate || joinDateSection) {
+    var today = new Date();
+    var formattedDate = today.toLocaleDateString("en-US", {
+      month: "long",
+      day: "numeric",
+      year: "numeric",
+    });
+    if (joinDate) joinDate.textContent = formattedDate;
+    if (joinDateSection) joinDateSection.textContent = formattedDate;
+  }
+  var currentDate = document.getElementById("current-date");
+  if (currentDate) {
+    currentDate.textContent = new Date().toLocaleDateString("en-US", {
+      weekday: "long",
+      month: "long",
+      day: "numeric",
+    });
+  }
+  var avatarIcon = document.querySelector(".avatar-icon");
+  if (avatarIcon) {
+    avatarIcon.textContent = userProgress.avatar || "🚀";
+  }
+  updateProfile();
+}
 
 function updateProfile() {
   var levelNames = [
@@ -2063,7 +2241,7 @@ function updateProfile() {
   }
 
   // Update profile name in dashboard
-  var dashboardProfileName = document.getElementById("dashboardProfileName");
+  var dashboardProfileName = document.getElementById("profileName");
   if (dashboardProfileName) {
     dashboardProfileName.textContent = userProgress.name;
   }
@@ -2075,10 +2253,9 @@ function updateProfile() {
   }
 
   // Update avatar
-  var avatarIcon = document.querySelector(".avatar-icon");
-  if (avatarIcon) {
-    avatarIcon.textContent = userProgress.avatar || "🚀";
-  }
+  document.querySelectorAll(".avatar-icon").forEach(el => {
+  el.textContent = userProgress.avatar || "🚀";
+});
 
   updateLevelProgress();
 }
@@ -2128,32 +2305,32 @@ function initDashboard() {
 }
 
 function updateDashboard() {
-   document.getElementById("completedProblems").textContent =
-     userProgress.completedProblems.length;
-   document.getElementById("currentStreak").textContent = userProgress.streak;
-   document.getElementById("totalXP").textContent = userProgress.xp;
+  document.getElementById("completedProblems").textContent =
+    userProgress.completedProblems.length;
+  document.getElementById("currentStreak").textContent = userProgress.streak;
+  document.getElementById("totalXP").textContent = userProgress.xp;
 
-   updateCurrentDate();
-   updateActivityList();
-   updateBadges();
-   updateRecentProblems(); // Recently Viewed Problems
-   updateLeaderboard();
- }
+  updateCurrentDate();
+  updateActivityList();
+  updateBadges();
+  updateRecentProblems(); // Recently Viewed Problems
+  updateLeaderboard();
+}
 
 function updateCurrentDate() {
-   const dateEl = document.getElementById("dashboard-current-date");
-   if (dateEl) {
-     const now = new Date();
-     dateEl.textContent = now.toLocaleDateString("en-US", {
-       weekday: "long",
-       month: "long",
-       day: "numeric",
-       year: "numeric",
-     });
-   }
- }
+  const dateEl = document.getElementById("dashboard-current-date");
+  if (dateEl) {
+    const now = new Date();
+    dateEl.textContent = now.toLocaleDateString("en-US", {
+      weekday: "long",
+      month: "long",
+      day: "numeric",
+      year: "numeric",
+    });
+  }
+}
 
- function updateActivityList() {
+function updateActivityList() {
   const activityList = document.getElementById("activityList");
 
   if (userProgress.completedProblems.length === 0) {
@@ -2194,16 +2371,13 @@ function updateRecentProblems() {
     !userProgress.recentProblems ||
     userProgress.recentProblems.length === 0
   ) {
-    container.innerHTML =
-      "<p>No recently viewed problems</p>";
+    container.innerHTML = "<p>No recently viewed problems</p>";
     return;
   }
 
   container.innerHTML = userProgress.recentProblems
     .map((id) => {
-      const problem = practiceProblems.find(
-        (p) => p.id === id
-      );
+      const problem = practiceProblems.find((p) => p.id === id);
 
       if (!problem) return "";
 
@@ -2215,20 +2389,17 @@ function updateRecentProblems() {
     })
     .join("");
 
-  container.querySelectorAll(".recent-problem")
-    .forEach((item) => {
-      item.addEventListener("click", () => {
-        const problemId = parseInt(item.dataset.id);
+  container.querySelectorAll(".recent-problem").forEach((item) => {
+    item.addEventListener("click", () => {
+      const problemId = parseInt(item.dataset.id);
 
-        const problem = practiceProblems.find(
-          (p) => p.id === problemId
-        );
+      const problem = practiceProblems.find((p) => p.id === problemId);
 
-        if (problem) {
-          openQuizEditor(problem);
-        }
-      });
+      if (problem) {
+        openQuizEditor(problem);
+      }
     });
+  });
 }
 
 function updateBadges() {
@@ -2286,6 +2457,16 @@ function updateBadges() {
         userProgress.completedProblems.length >= 25 && userProgress.xp >= 2500,
     },
   ];
+
+  // Update userProgress badges
+  const newlyEarned = badges.filter((b) => b.earned).map((b) => b.id);
+  
+  // Only save if badges changed to avoid unnecessary saves
+  const badgesChanged = JSON.stringify(newlyEarned) !== JSON.stringify(userProgress.badges);
+  userProgress.badges = newlyEarned;
+  if (badgesChanged) {
+      saveUserData();
+  }
 
   // Dashboard badges
   container.innerHTML = badges
@@ -2462,7 +2643,7 @@ function initChatbot() {
     if (!message) return;
 
     // Add user message
-    addChatMessage(`<p>${message}</p>`, "user");
+    addChatMessage(message, "user");
 
     // Store previous question
     lastQuestion = message;
@@ -2518,7 +2699,13 @@ function addChatMessage(message, sender) {
   const messagesContainer = document.getElementById("chatbotMessages");
   const messageEl = document.createElement("div");
   messageEl.className = `message ${sender}`;
-  messageEl.innerHTML = message;
+  // Safe rendering
+  if (sender === "user") {
+    messageEl.textContent = message;
+  } else {
+    messageEl.innerHTML = message;
+  }
+
   messagesContainer.appendChild(messageEl);
   messagesContainer.scrollTop = messagesContainer.scrollHeight;
 }
@@ -2538,10 +2725,10 @@ function getBotResponse(question) {
   return `
     <div class="assistant-response">
       <h4>🧠 Problem Understanding</h4>
-      <p>${question}</p>
+      <p>${escapeHtml(question)}</p>
 
       <h4>⚡ Approach</h4>
-      <p>${response}</p>
+      <p>${escapeHtml(response)}</p>
 
       <h4>💻 Code Solution</h4>
       <pre><code>
@@ -2561,18 +2748,40 @@ function solveProblem() {
 // ===== SCROLL EFFECTS =====
 function initScrollEffects() {
   const scrollTopBtn = document.getElementById("scrollTopBtn");
+  const backToTopBtn = document.getElementById("backToTopBtn");
 
-  window.addEventListener("scroll", () => {
-    if (window.scrollY > 500) {
-      scrollTopBtn.classList.add("visible");
-    } else {
-      scrollTopBtn.classList.remove("visible");
+  // Ensure missing elements don't break the rest of the page scripts.
+  const hasScrollTopBtn = !!scrollTopBtn;
+  const hasBackToTopBtn = !!backToTopBtn;
+
+  const setVisibleState = () => {
+    const shouldShow = window.scrollY > 500;
+
+    if (hasScrollTopBtn) {
+      scrollTopBtn.classList.toggle("visible", shouldShow);
     }
-  });
 
-  scrollTopBtn.addEventListener("click", () => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  });
+    // CSS for back-to-top uses .show
+    if (hasBackToTopBtn) {
+      backToTopBtn.classList.toggle("show", shouldShow);
+    }
+  };
+
+  window.addEventListener("scroll", setVisibleState);
+  setVisibleState();
+
+  if (hasScrollTopBtn) {
+    scrollTopBtn.addEventListener("click", () => {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+  }
+
+  if (hasBackToTopBtn) {
+    backToTopBtn.addEventListener("click", () => {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+  }
+
 
   // Intersection Observer for animations
   const observer = new IntersectionObserver(
@@ -2604,7 +2813,6 @@ function applySavedTheme() {
     document.body.classList.add("light-mode");
   }
 }
-
 
 function initDarkMode() {
   const toggle = document.getElementById("darkModeToggle");
@@ -2652,6 +2860,14 @@ function initializeAnimations() {
   });
 }
 
+function getDaysDifference(date1, date2) {
+  const d1 = new Date(date1);
+  d1.setHours(0, 0, 0, 0);
+  const d2 = new Date(date2);
+  d2.setHours(0, 0, 0, 0);
+  return Math.round((d2 - d1) / (1000 * 60 * 60 * 24));
+}
+
 // ===== LOCAL STORAGE =====
 function saveUserData() {
   try {
@@ -2673,17 +2889,15 @@ function loadUserData() {
       if (!userProgress.quizScores) {
         userProgress.quizScores = {};
       }
-        if (!userProgress.recentProblems) {
-          userProgress.recentProblems = [];
+      if (!userProgress.recentProblems) {
+        userProgress.recentProblems = [];
       }
 
       // Update streak if user was active yesterday
       if (userProgress.lastActive) {
         const lastActive = new Date(userProgress.lastActive);
         const today = new Date();
-        const diffDays = Math.floor(
-          (today - lastActive) / (1000 * 60 * 60 * 24),
-        );
+        const diffDays = getDaysDifference(lastActive, today);
 
         if (diffDays === 0) {
           // Already active today
@@ -2716,9 +2930,12 @@ function loadUserData() {
       xp: 0,
       level: 1,
       streak: 0,
+      favoriteProblems: [],
+      problemNotes: {},
       badges: [],
       lastActive: null,
       quizScores: {},
+      bestQuizTimes: {},
     };
     saveUserData();
   }
@@ -2727,7 +2944,10 @@ function loadUserData() {
 }
 
 // ===== QUIZ EDITOR =====
-let currentProblem = null;
+// currentProblem declared near the top-level to avoid TDZ issues.
+
+
+// currentNotesProblemId is already declared earlier; do not redeclare it here.
 
 function openTopicModal(topic) {
   const modal = document.getElementById("topicModal");
@@ -2751,7 +2971,6 @@ function closeTopicModal() {
   document.getElementById("topicModal").classList.remove("active");
 }
 
-let currentNotesProblemId = null;
 
 function openNotesModal(problemId) {
   const modal = document.getElementById("notesModal");
@@ -2759,8 +2978,10 @@ function openNotesModal(problemId) {
 
   currentNotesProblemId = problemId;
   const problem = practiceProblems.find((p) => p.id === problemId);
-  document.getElementById("notesModalTitle").textContent = `Notes: ${problem ? problem.title : ""}`;
-  document.getElementById("notesEditor").value = userProgress.problemNotes[problemId] || "";
+  document.getElementById("notesModalTitle").textContent =
+    `Notes: ${problem ? problem.title : ""}`;
+  document.getElementById("notesEditor").value =
+    userProgress.problemNotes[problemId] || "";
   modal.classList.add("active");
 }
 
@@ -2985,18 +3206,21 @@ function openQuizEditor(problem) {
       : problem.difficulty === "medium"
         ? "difficulty-medium"
         : "difficulty-hard");
-        
+
   const descEl = document.getElementById("quizDescription");
   if (problem.description) {
     let descHTML = problem.description;
     if (problem.constraints) {
-      descHTML += "<br><br><strong>Constraints:</strong><ul>" +
-        problem.constraints.map(c => `<li>${c}</li>`).join("") +
-        "</ul>";
+      descHTML +=
+        "<br><br><strong>Constraints:</strong><br>" +
+        problem.constraints.map((c) => `• ${c}`).join("<br>");
     }
     descEl.innerHTML = descHTML;
   } else {
-    descEl.textContent = 'Solve the "' + problem.title + '" problem. ' +
+    descEl.textContent =
+      'Solve the "' +
+      problem.title +
+      '" problem. ' +
       problem.tags.map((t) => "[" + t + "]").join(" ");
   }
   const examples = generateExamples(problem);
@@ -3078,7 +3302,7 @@ function updateStreak() {
     : null;
 
   if (lastActive) {
-    const diffDays = Math.floor((today - lastActive) / (1000 * 60 * 60 * 24));
+    const diffDays = getDaysDifference(lastActive, today);
     if (diffDays > 1) {
       userProgress.streak = 1;
     } else if (diffDays === 0) {
@@ -3108,17 +3332,15 @@ function addRecentProblem(problemId) {
   }
 
   // Remove existing occurrence
-  userProgress.recentProblems =
-    userProgress.recentProblems.filter(
-      (id) => id !== problemId
-    );
+  userProgress.recentProblems = userProgress.recentProblems.filter(
+    (id) => id !== problemId,
+  );
 
   // Add to beginning
   userProgress.recentProblems.unshift(problemId);
 
   // Keep only last 5
-  userProgress.recentProblems =
-    userProgress.recentProblems.slice(0, 5);
+  userProgress.recentProblems = userProgress.recentProblems.slice(0, 5);
 
   saveUserData();
 }
@@ -3319,74 +3541,128 @@ function validateEmail(email) {
 
 function initNewsletterValidation() {
   const forms = [
-      { formId: 'newsletterForm', inputId: 'newsletterEmail', errorId: 'newsletterError' }
+    {
+      formId: "newsletterForm",
+      inputId: "newsletterEmail",
+      errorId: "newsletterError",
+    },
   ];
 
   forms.forEach(({ formId, inputId, errorId }) => {
-      const form = document.getElementById(formId);
-      if (!form) return;
+    const form = document.getElementById(formId);
+    if (!form) return;
 
-      const input = document.getElementById(inputId);
-      const errorSpan = document.getElementById(errorId);
+    const input = document.getElementById(inputId);
+    const errorSpan = document.getElementById(errorId);
 
-      function showError(message) {
-          errorSpan.textContent = message;
-          input.classList.add('input-error');
-          input.classList.remove('input-success');
-          input.setAttribute('aria-invalid', 'true');
+    function showError(message) {
+      errorSpan.textContent = message;
+      input.classList.add("input-error");
+      input.classList.remove("input-success");
+      input.setAttribute("aria-invalid", "true");
+    }
+
+    function showSuccess() {
+      errorSpan.textContent = "";
+      input.classList.remove("input-error");
+      input.classList.add("input-success");
+      input.removeAttribute("aria-invalid");
+    }
+
+    function clearState() {
+      errorSpan.textContent = "";
+      input.classList.remove("input-error", "input-success");
+      input.removeAttribute("aria-invalid");
+    }
+
+    // Validate on blur (when user leaves the field)
+    input.addEventListener("blur", () => {
+      const value = input.value.trim();
+      if (!value) {
+        showError("Email address is required.");
+      } else if (!validateEmail(value)) {
+        showError(
+          "Please enter a valid email address (e.g. user@example.com).",
+        );
+      } else {
+        showSuccess();
+      }
+    });
+
+    // Clear error while user is typing
+    input.addEventListener("input", () => {
+      clearState();
+    });
+
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const value = input.value.trim();
+
+      if (!value) {
+        showError("Email address is required.");
+        input.focus();
+        return;
       }
 
-      function showSuccess() {
-          errorSpan.textContent = '';
-          input.classList.remove('input-error');
-          input.classList.add('input-success');
-          input.removeAttribute('aria-invalid');
+      if (!validateEmail(value)) {
+        showError(
+          "Please enter a valid email address (e.g. user@example.com).",
+        );
+        input.focus();
+        return;
       }
 
-      function clearState() {
-          errorSpan.textContent = '';
-          input.classList.remove('input-error', 'input-success');
-          input.removeAttribute('aria-invalid');
-      }
-
-      // Validate on blur (when user leaves the field)
-      input.addEventListener('blur', () => {
-          const value = input.value.trim();
-          if (!value) {
-              showError('Email address is required.');
-          } else if (!validateEmail(value)) {
-              showError('Please enter a valid email address (e.g. user@example.com).');
-          } else {
-              showSuccess();
-          }
-      });
-
-      // Clear error while user is typing
-      input.addEventListener('input', () => {
-              clearState();
-      });
-
-      form.addEventListener('submit', (e) => {
-          e.preventDefault();
-          const value = input.value.trim();
-
-          if (!value) {
-              showError('Email address is required.');
-              input.focus();
-              return;
-          }
-
-          if (!validateEmail(value)) {
-              showError('Please enter a valid email address (e.g. user@example.com).');
-              input.focus();
-              return;
-          }
-
-          // Valid — show success notification and reset
-          showSuccess();
-          showNotification('🎉 Successfully subscribed to the newsletter!', 'success');
-          input.value = '';
-          setTimeout(() => clearState(), 1500);
-      });
+      // Valid — show success notification and reset
+      showSuccess();
+      showNotification(
+        "🎉 Successfully subscribed to the newsletter!",
+        "success",
+      );
+      input.value = "";
+      setTimeout(() => clearState(), 1500);
+    });
   });
 }
+// Back To Top Button (supports both ids: backToTopBtn and scrollTopBtn)
+function initBackToTopButtons() {
+  const backToTopBtn = document.getElementById("backToTopBtn");
+  const scrollTopBtn = document.getElementById("scrollTopBtn");
+
+  // backToTopBtn uses .back-to-top styles + .show class
+  if (backToTopBtn) {
+    window.addEventListener("scroll", () => {
+      if (window.scrollY > 300) {
+        backToTopBtn.classList.add("show");
+      } else {
+        backToTopBtn.classList.remove("show");
+      }
+    });
+
+    backToTopBtn.addEventListener("click", () => {
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth",
+      });
+    });
+  }
+
+  // scrollTopBtn uses .scroll-top-btn styles + .visible class
+  if (scrollTopBtn) {
+    window.addEventListener("scroll", () => {
+      if (window.scrollY > 300) {
+        scrollTopBtn.classList.add("visible");
+      } else {
+        scrollTopBtn.classList.remove("visible");
+      }
+    });
+
+    scrollTopBtn.addEventListener("click", () => {
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth",
+      });
+    });
+  }
+}
+
+initBackToTopButtons();

@@ -28,7 +28,7 @@
 
     <!-- Scroll to Top Button -->
     <button id="scrollTopBtn" class="scroll-top-btn">
-      <i class="fas fa-arrow-up"></i>
+      <i class="fas fa-circle-chevron-up"></i>
     </button>
 
     <!-- Navigation Bar -->
@@ -45,6 +45,7 @@
         <li><a href="#roadmap">Roadmap</a></li>
         <li><a href="#interview">Interview Prep</a></li>
         <li><a href="cheat-sheets.html">Cheat Sheets</a></li>
+        <li><a href="community.html">Community</a></li>
         <li><a href="#dashboard">Dashboard</a></li>
         <li><a href="#profile">Profile</a></li>
       </ul>
@@ -792,6 +793,23 @@
             <div class="quiz-editor-panel">
               <div class="quiz-info-panel">
                 <h4>Quiz Instructions</h4>
+                <div class="quiz-timer-container">
+                  <div class="quiz-timer-box">
+                    <i class="fas fa-clock"></i>
+                    <div class="quiz-timer-content">
+                      <span class="timer-label">Current Time</span>
+                      <span class="timer-value" id="quizTimer">00:00</span>
+                    </div>
+                  </div>
+
+                  <div class="quiz-best-time-box">
+                    <i class="fas fa-trophy"></i>
+                    <div class="quiz-best-time-content">
+                      <span class="timer-label">Best Time</span>
+                      <span class="timer-value" id="bestQuizTime">--:--</span>
+                    </div>
+                  </div>
+                </div>
                 <ul>
                   <li>Select the correct answer for each question</li>
                   <li>You earn 10 XP per correct answer</li>
@@ -857,64 +875,6 @@
 
     <!-- Profile Section -->
     <section id="profile" class="section profile-section">
-
-        <div class="container">
-            <h2 class="section-title">
-                <span class="title-icon">👤</span>
-                Profile
-            </h2>
-            <div class="profile-container">
-                <!-- Profile Header -->
-                <div class="profile-header">
-                    <div class="profile-avatar">
-                        <span class="avatar-icon">🚀</span>
-                    </div>
-                    <div class="profile-info">
-                        <h3 id="profileSectionName">Learner</h3>
-                        <p class="profile-level" id="profileLevel">Level 1 - Beginner</p>
-                        <p class="profile-join">
-                            Joined: <span id="joinDate"></span>
-                        </p>
-                        <p class="profile-date">
-                            <i class="fas fa-calendar"></i>
-                            <span id="current-date"></span>
-                        </p>
-                    </div>
-                    <button class="profile-edit-btn" id="profileSectionEditBtn" title="Edit Profile">
-                        <i class="fas fa-pen"></i>
-                    </button>
-                </div>
-                <!-- Profile Stats -->
-                <div class="profile-stats">
-                    <div class="profile-stat">
-                        <span class="profile-stat-value" id="profileTotalXP">0</span>
-                        <span class="profile-stat-label">Total XP</span>
-                    </div>
-                    <div class="profile-stat">
-                        <span class="profile-stat-value" id="profileProblems">0</span>
-                        <span class="profile-stat-label">Problems</span>
-                    </div>
-                    <div class="profile-stat">
-                        <span class="profile-stat-value" id="profileStreak">0</span>
-                        <span class="profile-stat-label">Day Streak</span>
-                    </div>
-                    <div class="profile-stat">
-                        <span class="profile-stat-value" id="profileBadges">0</span>
-                        <span class="profile-stat-label">Badges</span>
-                    </div>
-                </div>
-                <!-- Profile Progress -->
-                <div class="profile-progress">
-                    <div class="progress-bar-container">
-                        <div class="progress-label">
-                            <span>Level Progress</span>
-                            <span id="profileLevelProgress">0%</span>
-                        </div>
-                        <div class="progress-bar">
-                            <div class="progress-fill" id="profileProgressBar"></div>
-                        </div>
-                    </div>
-                </div>
 
       <div class="container">
         <h2 class="section-title">
@@ -987,6 +947,43 @@
         </div>
       </div>
     </section>
+
+    <div
+      class="modal"
+      id="notesModal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="notesModalTitle"
+    >
+      <div class="modal-content notes-modal-content">
+        <div class="modal-header">
+          <h3 id="notesModalTitle">Problem Notes</h3>
+
+          <button class="modal-close" id="notesModalClose">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+
+        <div class="modal-body">
+          <label for="problemNotesInput">Problem notes</label>
+
+          <textarea
+            id="problemNotesInput"
+            class="notes-textarea"
+            placeholder="Write your notes, hints, observations, or edge cases here..."
+          ></textarea>
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn btn-secondary" id="closeNotesBtn">Close</button>
+
+          <button class="btn btn-primary" id="saveNotesBtn">
+            <i class="fas fa-save"></i>
+            Save Notes
+          </button>
+        </div>
+      </div>
+    </div>
 
     <!-- Footer -->
     <footer class="footer">
@@ -1117,7 +1114,11 @@
         </div>
       </div>
     </div>
-
+    <!-- Back To Top Button -->
+<button id="backToTopBtn" class="back-to-top" aria-label="Back to Top">
+  <i class="fas fa-arrow-up"></i>
+</button>
+    <script src="auth.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
