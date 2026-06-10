@@ -440,13 +440,19 @@ function resolveStaticPath(pathname) {
     "/community": "community.html",
     "/python-learning": "python-learning.html",
     "/javascript-learning": "javascript-learning.html",
+    "/dbms-learning": "dbms-learning.html",
     "/powerbi-learning": "powerbi-learning.html",
+    "/cplusplus-learning": "cplusplus-learning.html",
     "/feedback": "feedback.html",
     "/feedback.html": "feedback.html",
     "/support-page": "support-page/index.html",
     "/support-page/": "support-page/index.html",
   };
-  const mapped = routes[pathname] || pathname.slice(1);
+  let mapped = routes[pathname];
+  if (!mapped) {
+    const basePath = pathname.slice(1);
+    mapped = path.extname(basePath) ? basePath : basePath + ".html";
+  }
   const filePath = path.resolve(ROOT, mapped);
   const rel = path.relative(ROOT, filePath);
   if (rel.startsWith("..") || path.isAbsolute(rel)) return null;
@@ -527,6 +533,8 @@ if (process.env.VERCEL !== "1") {
       const host = process.env.HOST || "127.0.0.1";
 
       server.listen(port, host, () => {
+        const url = `http://${host}:${port}`;
+        console.log(`Server running at ${url}`);
         if (!process.env.SESSION_SECRET) {
           console.warn("Using a development SESSION_SECRET. Set SESSION_SECRET before deploying.");
         }

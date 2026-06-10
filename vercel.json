@@ -26,8 +26,12 @@
       "destination": "/javascript-learning.html"
     },
     {
-      "source": "/powerbi-learning",
-      "destination": "/powerbi-learning.html"
+      "source": "/dbms-learning",
+      "destination": "/dbms-learning.html"
+    },
+    {
+      "source": "/cplusplus-learning",
+      "destination": "/cplusplus-learning.html"
     }
   ],
   "headers": [
